@@ -45,6 +45,7 @@ jobs:
         run: |
           docker build -t ${{ secrets.DOCKER_USERNAME }}/mom-ai:latest .
           docker tag ${{ secrets.DOCKER_USERNAME }}/mom-ai:latest ${{ secrets.DOCKER_USERNAME }}/mom-ai:${{ github.sha }}
+        shell: bash  
 
       - name: Push Docker image to Docker Hub
         run: |
