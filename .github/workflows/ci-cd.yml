@@ -28,7 +28,7 @@ jobs:
           python -m pip install poetry
 
       - name: Install dependencies with Poetry
-        run: poetry install --no-interaction --no-ansi 
+        run: poetry install --no-interaction --no-ansi --no-root
 
       - name: Run Django tests
         env:
