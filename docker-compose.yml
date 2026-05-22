@@ -1,0 +1,20 @@
+
+version: "3.9"
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      SECRET_KEY: "dev-secret-key-change-in-production"
+      DEBUG: "True"
+      DJANGO_SETTINGS_MODULE: "django_project.settings"
+    healthcheck:
+      test: ["CMD", "sh", "-c", "curl -f http://localhost:5000 || wget -qO- http://localhost:5000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s

@@ -1,0 +1,8 @@
+# Ignore SQLite database file and local Python cache files.
+db.sqlite3
+__pycache__/
+*.pyc
+
+# Ignore Git metadata and local environment variables.
+.git
+.env

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Result - MOM AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container mt-5 text-center">
+        <div class="card shadow-lg mx-auto" style="max-width: 500px;">
+            <div class="card-body">
+                <h2 class="card-title">Prediction Result</h2>
+                <hr>
+                <p class="lead">The predicted risk level is:</p>
+                <div class="py-4">
+                    {% if "high" in risk|lower %}
+                        <h1 class="text-danger fw-bold">{{ risk }}</h1>
+                        <p class="text-muted">Please consult a doctor immediately.</p>
+                    {% elif "mid" in risk|lower %}
+                        <h1 class="text-warning fw-bold">{{ risk }}</h1>
+                        <p class="text-muted">Stay alert and monitor symptoms regularly.</p>
+                    {% else %}
+                        <h1 class="text-success fw-bold">{{ risk }}</h1>
+                        <p class="text-muted">Everything looks stable! Keep it up.</p>
+                    {% endif %}
+                </div>
+                <div class="mt-4">
+                    <a href="{% url 'predictor:predict' %}" class="btn btn-outline-primary">New Prediction</a>
+                    <a href="{% url 'predictor:home' %}" class="btn btn-outline-secondary">Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

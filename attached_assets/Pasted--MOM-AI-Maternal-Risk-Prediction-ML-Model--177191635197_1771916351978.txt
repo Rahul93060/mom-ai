@@ -1,0 +1,149 @@
+# ===============================
+# MOM AI - Maternal Risk Prediction ML Model
+# ===============================
+
+# ----------- 1. Import Libraries -----------
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+
+import pickle
+
+sns.set_style("whitegrid")
+
+
+# ----------- 2. Load Dataset -----------
+
+df = pd.read_csv("maternal health high risk pregnancy dataset 1.csv")
+
+print("First 5 Rows:\n")
+print(df.head())
+
+print("\nDataset Info:\n")
+df.info()
+
+print("\nDataset Shape:", df.shape)
+
+print("\nStatistical Summary:\n")
+print(df.describe())
+
+
+# ----------- 3. Handle Missing Values -----------
+
+print("\nMissing Values:\n")
+print(df.isnull().sum())
+
+df.fillna(df.mean(numeric_only=True), inplace=True)
+
+print("\nMissing Values After Cleaning:\n")
+print(df.isnull().sum())
+
+
+# ----------- 4. Encode Target Column -----------
+
+print("\nTarget Distribution Before Encoding:\n")
+print(df["RiskLevel"].value_counts())
+
+le = LabelEncoder()
+df["RiskLevel"] = le.fit_transform(df["RiskLevel"])
+
+pickle.dump(le, open("label_encoder.pkl", "wb"))
+
+print("\nClass Mapping:")
+for i, label in enumerate(le.classes_):
+    print(f"{i} -> {label}")
+
+
+# ----------- 5. Correlation Heatmap -----------
+
+plt.figure(figsize=(10,8))
+sns.heatmap(df.corr(), annot=True, cmap="coolwarm")
+plt.title("Feature Correlation Heatmap")
+plt.show()
+
+
+# ----------- 6. Split Features and Target -----------
+
+X = df.drop("RiskLevel", axis=1)
+y = df["RiskLevel"]
+
+print("\nFeature Columns Order:")
+print(X.columns)
+
+pickle.dump(X.columns.tolist(), open("feature_names.pkl", "wb"))
+
+
+# ----------- 7. Train Test Split -----------
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+
+# ----------- 8. Logistic Regression -----------
+
+lr = LogisticRegression(max_iter=1000)
+lr.fit(X_train, y_train)
+
+y_pred_lr = lr.predict(X_test)
+
+print("\nLogistic Regression Accuracy:", accuracy_score(y_test, y_pred_lr))
+
+
+# ----------- 9. Random Forest (Final Model) -----------
+
+rf = RandomForestClassifier(random_state=42)
+rf.fit(X_train, y_train)
+
+y_pred_rf = rf.predict(X_test)
+
+print("Random Forest Accuracy:", accuracy_score(y_test, y_pred_rf))
+
+
+# ----------- 10. Evaluation -----------
+
+print("\nConfusion Matrix:\n")
+print(confusion_matrix(y_test, y_pred_rf))
+
+print("\nClassification Report:\n")
+print(classification_report(y_test, y_pred_rf))
+
+
+# ----------- 11. Feature Importance -----------
+
+feature_importance = pd.Series(rf.feature_importances_, index=X.columns)
+
+feature_importance.sort_values().plot(kind="barh", figsize=(8,6))
+plt.title("Feature Importance")
+plt.show()
+
+
+# ----------- 12. Save Final Model -----------
+
+pickle.dump(rf, open("mom_ai_model.pkl", "wb"))
+
+print("\nModel saved successfully.")
+
+
+# ----------- 13. Test Saved Model -----------
+
+model = pickle.load(open("mom_ai_model.pkl", "rb"))
+encoder = pickle.load(open("label_encoder.pkl", "rb"))
+
+sample = X.iloc[0:1]
+
+prediction = model.predict(sample)
+decoded_prediction = encoder.inverse_transform(prediction)
+
+print("\nEncoded Prediction:", prediction)
+print("Decoded Prediction:", decoded_prediction)
+
+print("\nML Pipeline Completed Successfully.")

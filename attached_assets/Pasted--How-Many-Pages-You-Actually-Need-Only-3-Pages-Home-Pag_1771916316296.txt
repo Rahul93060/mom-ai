@@ -1,0 +1,239 @@
+✅ How Many Pages You Actually Need?
+
+Only 3 Pages:
+
+🏠 Home Page
+
+📝 Prediction Form Page
+
+📊 Result Page
+
+That’s enough for major project.
+
+🧩 What Fields Should User Fill?
+
+IMPORTANT:
+
+The fields must match:
+
+print(X.columns)
+
+Whatever that output gave you — those are your form fields.
+
+For example, if your dataset has:
+
+Age
+SystolicBP
+DiastolicBP
+BS
+BodyTemp
+HeartRate
+
+Then your Django form must have exactly these fields.
+
+🏗️ Django Project Structure
+mom_ai/
+│
+├── predictor/
+│   ├── views.py
+│   ├── forms.py
+│   ├── urls.py
+│
+├── templates/
+│   ├── home.html
+│   ├── form.html
+│   ├── result.html
+│
+├── mom_ai_model.pkl
+├── label_encoder.pkl
+├── feature_names.pkl
+
+Keep .pkl files in project root.
+
+🧠 What You Need in Django
+1️⃣ Install Django
+pip install django
+2️⃣ Create Project
+django-admin startproject mom_ai
+cd mom_ai
+python manage.py startapp predictor
+
+Add predictor in settings.py.
+
+📝 Step 3 – Create Form
+forms.py
+
+Example (modify based on your features):
+
+from django import forms
+
+class HealthForm(forms.Form):
+    age = forms.FloatField()
+    systolic_bp = forms.FloatField()
+    diastolic_bp = forms.FloatField()
+    bs = forms.FloatField()
+    body_temp = forms.FloatField()
+    heart_rate = forms.FloatField()
+
+These fields MUST match training features.
+
+🧠 Step 4 – Connect ML Model
+
+Now the important part.
+
+views.py
+import pickle
+import numpy as np
+from django.shortcuts import render
+from .forms import HealthForm
+
+# Load model and encoder
+model = pickle.load(open("mom_ai_model.pkl", "rb"))
+encoder = pickle.load(open("label_encoder.pkl", "rb"))
+
+def home(request):
+    return render(request, "home.html")
+
+def predict(request):
+    if request.method == "POST":
+        form = HealthForm(request.POST)
+        if form.is_valid():
+
+            data = [
+                form.cleaned_data['age'],
+                form.cleaned_data['systolic_bp'],
+                form.cleaned_data['diastolic_bp'],
+                form.cleaned_data['bs'],
+                form.cleaned_data['body_temp'],
+                form.cleaned_data['heart_rate'],
+            ]
+
+            prediction = model.predict([data])
+            decoded_prediction = encoder.inverse_transform(prediction)
+
+            return render(request, "result.html", {
+                "risk": decoded_prediction[0]
+            })
+    else:
+        form = HealthForm()
+
+    return render(request, "form.html", {"form": form})
+
+This is where ML connects to Django.
+
+📄 Step 5 – Templates
+🏠 home.html
+
+Project title
+
+Description
+
+Button → “Start Prediction”
+
+📝 form.html
+<h2>Maternal Health Prediction</h2>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Predict Risk</button>
+</form>
+📊 result.html
+<h2>Prediction Result</h2>
+
+<h3>Risk Level: {{ risk }}</h3>
+
+Optional:
+
+Color coding using simple if:
+
+{% if risk == "High" %}
+    <p style="color:red;">High Risk</p>
+{% elif risk == "Medium" %}
+    <p style="color:orange;">Medium Risk</p>
+{% else %}
+    <p style="color:green;">Low Risk</p>
+{% endif %}
+🔗 URLs Configuration
+predictor/urls.py
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path("", views.home, name="home"),
+    path("predict/", views.predict, name="predict"),
+]
+mom_ai/urls.py
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    path("", include("predictor.urls")),
+]
+🚀 How It Works Flow
+
+User opens home page
+
+Clicks Start Prediction
+
+Fills medical details
+
+Submits form
+
+Data goes to ML model
+
+Model predicts risk
+
+Encoder converts number to label
+
+Result page shows risk
+
+That’s the full pipeline.
+
+🎓 What You Can Say in Viva
+
+“The Django frontend collects maternal health parameters. These inputs are passed to a pre-trained Random Forest model. The model predicts the risk category, which is then decoded and displayed to the user.”
+
+Very professional.
+
+❓ Do You Need Database?
+
+For now → ❌ No
+
+You don’t need:
+
+User registration
+
+Patient history
+
+Admin panel customization
+
+Keep it simple.
+
+🏁 Final Checklist for Django
+
+You need:
+
+✔ Django installed
+✔ Project created
+✔ App created
+✔ Form created
+✔ Model loaded (.pkl files)
+✔ Prediction view
+✔ Templates
+✔ URLs configured
+
+That’s it.
+
+Now very important:
+
+Send me the exact output of:
+
+print(X.columns)
+
+Because we must design form fields exactly according to that.
+
+Otherwise prediction will break.
+
+Let’s build it correctly from first try.
